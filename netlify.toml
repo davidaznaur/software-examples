@@ -6,3 +6,8 @@
   from = "/api/fetch"
   to = "/.netlify/functions/fetch-data"
   status = 200
+
+[[redirects]]
+  from = "/examples/:id"
+  to = "/.netlify/functions/example-page?id=:id"
+  status = 200

@@ -7,16 +7,16 @@ function createItems() {
   return Array.from({ length: LINK_COUNT }, (_, index) => ({
     id: index + 1,
     label: `Link ${index + 1}`,
-    data: '',
-    error: '',
-    responseType: '',
-    loadedAt: '',
   }))
 }
 
 export default function App() {
   const [items, setItems] = useState(() => createItems())
   const [activeId, setActiveId] = useState(1)
+  const [data, setData] = useState('')
+  const [error, setError] = useState('')
+  const [responseType, setResponseType] = useState('')
+  const [loadedAt, setLoadedAt] = useState('')
   const [loading, setLoading] = useState(false)
   const hasLoadedInitialItem = useRef(false)
 
@@ -34,11 +34,8 @@ export default function App() {
 
   async function handleLoad(selectedId = activeId) {
     setLoading(true)
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === selectedId ? { ...item, error: '' } : item,
-      ),
-    )
+    setActiveId(selectedId)
+    setError('')
 
     try {
       const response = await fetch(getRequestUrl(DEFAULT_ENDPOINT))
@@ -51,56 +48,23 @@ export default function App() {
 
       if (contentType.includes('application/json')) {
         const result = await response.json()
-        setItems((currentItems) =>
-          currentItems.map((item) =>
-            item.id === selectedId
-              ? {
-                  ...item,
-                  data: JSON.stringify(result, null, 2),
-                  error: '',
-                  responseType: 'JSON',
-                  loadedAt: new Date().toLocaleTimeString(),
-                }
-              : item,
-          ),
-        )
+        setData(JSON.stringify(result, null, 2))
+        setResponseType('JSON')
+        setLoadedAt(new Date().toLocaleTimeString())
       } else {
         const result = await response.text()
-        setItems((currentItems) =>
-          currentItems.map((item) =>
-            item.id === selectedId
-              ? {
-                  ...item,
-                  data: result,
-                  error: '',
-                  responseType: contentType || 'Text',
-                  loadedAt: new Date().toLocaleTimeString(),
-                }
-              : item,
-          ),
-        )
+        setData(result)
+        setResponseType(contentType || 'Text')
+        setLoadedAt(new Date().toLocaleTimeString())
       }
     } catch (err) {
-      setItems((currentItems) =>
-        currentItems.map((item) =>
-          item.id === selectedId
-            ? {
-                ...item,
-                data: '',
-                responseType: '',
-                error: err instanceof Error ? err.message : 'Something went wrong',
-              }
-            : item,
-        ),
-      )
+      setData('')
+      setResponseType('')
+      setLoadedAt('')
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
-  }
-
-  function handleLinkClick(itemId) {
-    setActiveId(itemId)
-    void handleLoad(itemId)
   }
 
   useEffect(() => {
@@ -117,47 +81,45 @@ export default function App() {
   return (
     <main className="app-shell">
       <section className="card">
-        <p className="eyebrow">Minimal React + Vite</p>
+        <p className="eyebrow">Crawler-Friendly Example Index</p>
         <h1>Great software engineer code examples for everyday usage</h1>
         <p className="intro">
-          Browse the list and click any example to load fresh data from the same source.
+          Browse 50 real links. Each one points to its own crawlable page and loads fresh data
+          from the same source.
         </p>
         <p className="note">
-          Each link requests a new response and shows the result in the panel beside the list.
+          The preview panel below auto-loads the first example when someone lands on the homepage.
         </p>
 
         <div className="toolbar">
           <p className="selection">
-            {loading ? `Loading ${activeItem.label}...` : `Click a link to load its data.`}
+            {loading ? `Loading preview for ${activeItem.label}...` : `Open a link to visit its page.`}
           </p>
         </div>
 
         <div className="content-grid">
           <nav className="link-list" aria-label="Data links">
             {items.map((item) => (
-              <button
+              <a
                 key={item.id}
-                type="button"
                 className={`link-item${item.id === activeId ? ' active' : ''}`}
-                onClick={() => handleLinkClick(item.id)}
+                href={`/examples/${item.id}`}
               >
                 <span>{item.label}</span>
-                <span className="link-meta">{item.loadedAt ? 'Loaded' : 'Not loaded'}</span>
-              </button>
+                <span className="link-meta">Open page</span>
+              </a>
             ))}
           </nav>
 
           <section className="output-panel">
-            {activeItem.error ? <p className="status error">{activeItem.error}</p> : null}
-            {activeItem.responseType ? (
+            {error ? <p className="status error">{error}</p> : null}
+            {responseType ? (
               <p className="status">
-                Response type: {activeItem.responseType}
-                {activeItem.loadedAt ? ` at ${activeItem.loadedAt}` : ''}
+                Preview response type: {responseType}
+                {loadedAt ? ` at ${loadedAt}` : ''}
               </p>
             ) : null}
-            <pre className="output">
-              {activeItem.data || 'Select a link to fetch data.'}
-            </pre>
+            <pre className="output">{data || 'Preview data will appear here.'}</pre>
           </section>
         </div>
       </section>
