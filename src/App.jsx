@@ -25,7 +25,7 @@ export default function App() {
     const isCrossOrigin = parsedUrl.origin !== window.location.origin
     const isHttpRequest = parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'
 
-    if (import.meta.env.DEV && isCrossOrigin && isHttpRequest) {
+    if (isCrossOrigin && isHttpRequest) {
       return `/api/fetch?url=${encodeURIComponent(parsedUrl.toString())}`
     }
 
@@ -156,7 +156,7 @@ export default function App() {
               </p>
             ) : null}
             <pre className="output">
-              {activeItem.data || 'Select a link and click the load button to fetch data.'}
+              {activeItem.data || 'Select a link to fetch data.'}
             </pre>
           </section>
         </div>
