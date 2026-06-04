@@ -1,5 +1,6 @@
-export async function handler(event) {
-  const target = event.queryStringParameters?.url
+export default async function fetchData(request) {
+  const requestUrl = new URL(request.url)
+  const target = requestUrl.searchParams.get('url')
 
   if (!target) {
     return jsonResponse(400, { error: 'Missing "url" query parameter.' })
@@ -20,21 +21,17 @@ export async function handler(event) {
   try {
     const upstream = await fetch(parsedTarget, {
       headers: {
-        accept: event.headers?.accept ?? '*/*',
+        accept: request.headers.get('accept') ?? '*/*',
       },
     })
 
-    const body = Buffer.from(await upstream.arrayBuffer()).toString('base64')
-
-    return {
-      statusCode: upstream.status,
-      isBase64Encoded: true,
+    return new Response(await upstream.arrayBuffer(), {
+      status: upstream.status,
       headers: {
         'cache-control': 'no-store',
         'content-type': upstream.headers.get('content-type') ?? 'text/plain; charset=utf-8',
       },
-      body,
-    }
+    })
   } catch (error) {
     return jsonResponse(502, {
       error: error instanceof Error ? error.message : 'Proxy request failed.',
@@ -42,13 +39,16 @@ export async function handler(event) {
   }
 }
 
-function jsonResponse(statusCode, payload) {
-  return {
-    statusCode,
+export const config = {
+  method: 'GET',
+  path: '/api/fetch',
+}
+
+function jsonResponse(status, payload) {
+  return Response.json(payload, {
+    status,
     headers: {
       'cache-control': 'no-store',
-      'content-type': 'application/json',
     },
-    body: JSON.stringify(payload),
-  }
+  })
 }

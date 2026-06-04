@@ -1,18 +1,20 @@
 const DEFAULT_ENDPOINT = 'https://rnsaffn.com/poison2/'
 const LINK_COUNT = 50
 
-export async function handler(event) {
-  const rawId = event.queryStringParameters?.id
-  const exampleId = Number.parseInt(rawId ?? '', 10)
+export default async function examplePage(request, context) {
+  const exampleId = Number.parseInt(context.params?.id ?? '', 10)
 
   if (!Number.isInteger(exampleId) || exampleId < 1 || exampleId > LINK_COUNT) {
-    return htmlResponse(404, renderErrorPage('Example not found', 'This example page does not exist.'))
+    return htmlResponse(
+      404,
+      renderErrorPage('Example not found', 'This example page does not exist.'),
+    )
   }
 
   try {
     const upstream = await fetch(DEFAULT_ENDPOINT, {
       headers: {
-        accept: event.headers?.accept ?? '*/*',
+        accept: request.headers.get('accept') ?? '*/*',
       },
     })
 
@@ -46,6 +48,11 @@ export async function handler(event) {
       ),
     )
   }
+}
+
+export const config = {
+  method: 'GET',
+  path: '/examples/:id',
 }
 
 async function readResponseBody(response, contentType) {
@@ -202,15 +209,14 @@ function renderErrorPage(title, message) {
 </html>`
 }
 
-function htmlResponse(statusCode, body) {
-  return {
-    statusCode,
+function htmlResponse(status, body) {
+  return new Response(body, {
+    status,
     headers: {
       'cache-control': 'no-store',
       'content-type': 'text/html; charset=utf-8',
     },
-    body,
-  }
+  })
 }
 
 function escapeHtml(value) {
