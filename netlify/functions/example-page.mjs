@@ -119,23 +119,54 @@ function renderExamplePage({ exampleId, contentType, bodyText }) {
         line-height: 1.05;
       }
       .intro { margin: 14px 0 16px; color: #475569; }
-      .top-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
+      .home-link-row {
         margin: 18px 0 22px;
       }
-      .home-link, .mini-link {
+      .home-link {
         text-decoration: none;
         border-radius: 999px;
         padding: 10px 14px;
         border: 1px solid #cbd5e1;
         background: #fff;
         color: #0f172a;
+        display: inline-block;
+      }
+      .content-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 240px) minmax(0, 1fr);
+        gap: 18px;
+      }
+      .link-list {
+        display: grid;
+        gap: 10px;
+        max-height: 480px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+      .mini-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        text-decoration: none;
+        padding: 12px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        background: #fff;
+        color: #0f172a;
       }
       .mini-link.active {
         border-color: #1d4ed8;
         background: #dbeafe;
+      }
+      .link-meta {
+        color: #64748b;
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+      .output-panel {
+        min-width: 0;
       }
       .status { margin: 0 0 16px; font-weight: 600; color: #475569; }
       pre {
@@ -150,6 +181,11 @@ function renderExamplePage({ exampleId, contentType, bodyText }) {
         white-space: pre-wrap;
         word-break: break-word;
       }
+      @media (max-width: 640px) {
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
@@ -158,12 +194,16 @@ function renderExamplePage({ exampleId, contentType, bodyText }) {
         <p class="eyebrow">Server-rendered example page</p>
         <h1>Great software engineer code examples for everyday usage</h1>
         <p class="intro">Example ${exampleId} fetched fresh data from the shared source and rendered it directly into this HTML page.</p>
-        <div class="top-links">
+        <div class="home-link-row">
           <a class="home-link" href="/">Back to index</a>
         </div>
-        <div class="top-links">${navLinks}</div>
-        <p class="status">Response type: ${escapeHtml(contentType)}</p>
-        <pre>${escapedData}</pre>
+        <div class="content-grid">
+          <nav class="link-list" aria-label="Example links">${navLinks}</nav>
+          <section class="output-panel">
+            <p class="status">Response type: ${escapeHtml(contentType)}</p>
+            <pre>${escapedData}</pre>
+          </section>
+        </div>
       </section>
     </main>
   </body>
