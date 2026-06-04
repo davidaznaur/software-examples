@@ -230,7 +230,7 @@ function renderErrorPage(title, message) {
         color: #1f2937;
       }
       .card {
-        width: min(100%, 720px);
+        width: 100%;
         padding: 24px;
         border-radius: 18px;
         background: white;
